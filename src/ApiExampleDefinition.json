@@ -1,0 +1,423 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MIC WebSocket API",
+    "version": "1.0",
+    "description": "Meet in the Cloud Service over WebSocket",
+    "contact": {
+      "name": "Miguel Esteves"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://wss.paygateway.com/mic",
+      "description": "Prod"
+    },
+    {
+      "url": "https://wss.dev.paygateway.com/mic",
+      "description": "Dev"
+    }
+  ],
+  "tags": [
+    {
+      "name": "MicAPI"
+    }
+  ],
+  "paths": {
+    "/": {
+      "parameters": [],
+      "get": {
+        "summary": "GET websocket connection",
+        "operationId": "post-connected-clients-namespace-clientId-messages",
+        "responses": {
+          "101": {
+            "$ref": "#/components/responses/HttpSuccess101Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/Http400ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/HttpErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/HttpErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/HttpErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/HttpErrorResponse"
+          }
+        },
+        "description": "Start a websocket connection, send a client registration request and get an open websocket connection returned.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Authorization"
+          },
+          {
+            "$ref": "#/components/parameters/Host"
+          },
+          {
+            "$ref": "#/components/parameters/Connection"
+          },
+          {
+            "$ref": "#/components/parameters/Upgrade"
+          },
+          {
+            "$ref": "#/components/parameters/Sec-WebSocket-Key"
+          },
+          {
+            "$ref": "#/components/parameters/Sec-WebSocket-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-GP-Request-Id"
+          },
+          {
+            "$ref": "#/components/parameters/X-GP-Source-App-Name"
+          },
+          {
+            "$ref": "#/components/parameters/X-GP-Source-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Mic-Client"
+          }
+        ],
+        "tags": [
+          "MicAPI"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WssMessageRequest": {
+        "description": "Async message request to the server",
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "action": "sendmessage",
+            "wss_request_id": "78cee369-b22b-4d3b-9984-69df9b8251c6",
+            "to_client": "cedevice::deviceId999",
+            "message_type": "Genius.PosAPI1.Initiate",
+            "message_version": "v1",
+            "message": "string message request"
+          }
+        },
+        "properties": {
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "sendmessage"
+            ]
+          },
+          "wss_request_id": {
+            "$ref": "#/components/parameters/wss_request_id"
+          },
+          "to_client": {
+            "$ref": "#/components/parameters/mic_client"
+          },
+          "message_type": {
+            "$ref": "../models/Message.v1.yaml#/properties/message_type"
+          },
+          "message_version": {
+            "$ref": "../models/Message.v1.yaml#/properties/message_version"
+          },
+          "message": {
+            "$ref": "../models/Message.v1.yaml#/properties/message"
+          }
+        },
+        "required": [
+          "action",
+          "wss_request_id",
+          "to_client",
+          "message_type"
+        ]
+      },
+      "WssMessage": {
+        "description": "Async message request from the server to the target client",
+        "type": "object",
+        "properties": {
+          "wss_request_id": {
+            "$ref": "#/components/parameters/wss_request_id"
+          },
+          "from_client": {
+            "$ref": "#/components/parameters/mic_client"
+          },
+          "to_client": {
+            "$ref": "#/components/parameters/mic_client"
+          },
+          "message_type": {
+            "$ref": "../models/Message.v1.yaml#/properties/message_type"
+          },
+          "message_version": {
+            "$ref": "../models/Message.v1.yaml#/properties/message_version"
+          },
+          "message": {
+            "$ref": "../models/Message.v1.yaml#/properties/message"
+          }
+        },
+        "required": [
+          "wss_request_id",
+          "from_client",
+          "to_client",
+          "message_type"
+        ],
+        "x-examples": {
+          "example-1": {
+            "wss_request_id": "78cee369-b22b-4d3b-9984-69df9b8251c6",
+            "from_client": "cedevice::deviceId999",
+            "to_client": "mic::pos-one-time-generated-id",
+            "message_type": "Genius.PosAPI1.Initiate",
+            "message_version": "v1",
+            "message": "string message response"
+          }
+        },
+        "title": ""
+      },
+      "WssMessageRequestAck": {
+        "description": "Async success/error response to a message request",
+        "type": "object",
+        "x-examples": {
+          "example-200": {
+            "wss_request_id": "78cee369-b22b-4d3b-9984-69df9b8251c6",
+            "code": "200",
+            "message": "Data sent."
+          },
+          "example-400": {
+            "wss_request_id": "78cee369-b22b-4d3b-9984-69df9b8251c6",
+            "code": "400",
+            "message": "Validation failed.",
+            "detail": [
+              {
+                "description": "'message_type' must not be empty",
+                "data_path": "/message-type"
+              }
+            ]
+          },
+          "example-404": {
+            "wss_request_id": "78cee369-b22b-4d3b-9984-69df9b8251c6",
+            "code": "404",
+            "message": "Target client not found."
+          }
+        },
+        "properties": {
+          "wss_request_id": {
+            "$ref": "#/components/parameters/wss_request_id"
+          },
+          "code": {
+            "type": "string",
+            "description": "Status code on the message request."
+          },
+          "message": {
+            "type": "string"
+          },
+          "detail": {
+            "$ref": "../models/ErrorDetail.v1.yaml"
+          }
+        },
+        "required": [
+          "wss_request_id",
+          "code",
+          "message"
+        ]
+      }
+    },
+    "parameters": {
+      "X-GP-Source-App-Name": {
+        "name": "X-GP-Source-App-Name",
+        "description": "Name of the source application",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "X-GP-Source-App-Version": {
+        "name": "X-GP-Source-App-Version",
+        "description": "Name of the source application",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "X-GP-Request-Id": {
+        "name": "X-GP-Request-Id",
+        "description": "Unique id identifying the request. This is an optional parameter. If not provided in the request, it will be generated by the payment gateway and sent in the response headers. API consumer may send this parameter in the request for tracking and correlating requests with responses and for troubleshooting timeouts. The value for this parameter should be a UUID(v4) with a prefix 'MER-', example MER-ba96b9c5-828c-434c-be74-d73c8e853526. Payment gateway generated Request-Ids will have an 'API-' prefix. Please refer to the API documentation for UUID(v4) generation guide. Abbreviation details: 'MIC' - Meet in the Cloud, 'MER' - Merchant, 'API' - APIGEE, 'TST' - Load Testing or other manual testing.",
+        "in": "header",
+        "schema": {
+          "example": "MER-11223344-1122-1122-1122-112233445566",
+          "type": "string",
+          "maxLength": 50,
+          "pattern": "^((MIC|MER|API|TST)(?:\\-)(\\{){0,1}[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}(\\}){0,1})+$"
+        }
+      },
+      "wss_request_id": {
+        "name": "wss_request_id",
+        "description": "WebSocket Server request/response correlation id.",
+        "schema": {
+          "example": "11223344-1122-1122-1122-112233445566",
+          "type": "string",
+          "maxLength": 50,
+          "pattern": "^((\\{){0,1}[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}(\\}){0,1})+$"
+        }
+      },
+      "Content-Type": {
+        "in": "header",
+        "name": "Content-Type",
+        "description": "Describes the data contained in the body. Supported value - application/json.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/json"
+          ]
+        }
+      },
+      "Host": {
+        "in": "header",
+        "name": "Host",
+        "description": "Describes the host header.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Mic-Client": {
+        "in": "header",
+        "name": "Mic-Client",
+        "description": "Client unique identifier in the format of namespace::identifier.",
+        "required": true,
+        "schema": {
+          "example": "cedevice::deviceId123",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9-_]{1,50}\\:\\:[A-Za-z0-9-_]{1,50}$",
+          "minLength": 4,
+          "maxLength": 102
+        }
+      },
+      "mic_client": {
+        "name": "mic_client",
+        "description": "Client unique identifier in the format of namespace::identifier.",
+        "required": true,
+        "schema": {
+          "example": "cedevice::deviceId123",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9-_]{1,50}\\:\\:[A-Za-z0-9-_]{1,50}$",
+          "minLength": 4,
+          "maxLength": 102
+        }
+      },
+      "Connection": {
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "Upgrade"
+          ]
+        },
+        "name": "Connection",
+        "required": true
+      },
+      "Upgrade": {
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "websocket"
+          ]
+        },
+        "name": "Upgrade",
+        "required": true
+      },
+      "Sec-WebSocket-Key": {
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "name": "Sec-WebSocket-Key",
+        "required": true
+      },
+      "Sec-WebSocket-Version": {
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "example": "13"
+        },
+        "name": "Sec-WebSocket-Version",
+        "required": true
+      },
+      "Authorization": {
+        "name": "Authorization",
+        "description": "Authorization Bearer JWT token with ApiKey, \"AppToken\" type claim and a signature from an HMAC-SHA256 signing algorithm.",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlJZCI6IkF1dGhBUElUZXN0T25seUtleTAxIiwidHlwZSI6IkFwcFRva2VuIiwiaWF0IjoiMTYxMDY3MTkzNSIsImp0aSI6ImVkNTI3Yjc2LTViYzktNDJjOC04ZDc2LTgxNzkwOTgxMzVlMSJ9.HvlHqP-dL7X2tdMxyyWLuPOI0TaB47DBI84MZDOgfWA"
+        }
+      }
+    },
+    "responses": {
+      "HttpErrorResponse": {
+        "description": "Example response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../models/HttpErrorResponseBody.v1.yaml"
+            },
+            "examples": {}
+          }
+        },
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/parameters/Content-Type"
+          },
+          "X-GP-Request-Id": {
+            "$ref": "#/components/parameters/X-GP-Request-Id"
+          }
+        }
+      },
+      "Http400ErrorResponse": {
+        "description": "Example response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../models/Http400ErrorResponseBody.v1.yaml"
+            },
+            "examples": {}
+          }
+        },
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/parameters/Content-Type"
+          },
+          "X-GP-Request-Id": {
+            "$ref": "#/components/parameters/X-GP-Request-Id"
+          }
+        }
+      },
+      "HttpSuccess101Response": {
+        "description": "Example response",
+        "headers": {
+          "Connection": {
+            "$ref": "#/components/parameters/Connection"
+          },
+          "Upgrade": {
+            "$ref": "#/components/parameters/Upgrade"
+          },
+          "Sec-WebSocket-Key": {
+            "$ref": "#/components/parameters/Sec-WebSocket-Key"
+          },
+          "Sec-WebSocket-Version": {
+            "$ref": "#/components/parameters/Sec-WebSocket-Version"
+          },
+          "X-GP-Request-Id": {
+            "$ref": "#/components/parameters/X-GP-Request-Id"
+          }
+        }
+      }
+    }
+  }
+}
